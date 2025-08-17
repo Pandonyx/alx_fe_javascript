@@ -145,3 +145,34 @@ input[type="text"]:focus {
         padding: 1.5rem;
     }
 }
+
+/* JSON controls styles */
+.json-controls {
+    margin-top: 2rem;
+    padding: 1rem;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.json-controls button,
+.json-controls .file-label {
+    margin: 0 0.5rem;
+    padding: 0.8rem 1.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.file-label {
+    background-color: #3498db;
+    color: white;
+    display: inline-block;
+}
+
+.file-label:hover {
+    background-color: #2980b9;
+}

@@ -1,4 +1,4 @@
-// Array to store quote objects
+// Store quotes in an array of objects
 const quotes = [
     { text: "Life is what happens while you're busy making other plans.", category: "Life" },
     { text: "The only way to do great work is to love what you do.", category: "Work" },
@@ -6,6 +6,7 @@ const quotes = [
     { text: "Stay hungry, stay foolish.", category: "Motivation" }
 ];
 
+// Load quotes from localStorage
 function loadQuotes() {
     const savedQuotes = localStorage.getItem('quotes');
     if (savedQuotes) {
@@ -13,11 +14,17 @@ function loadQuotes() {
     }
 }
 
+// Save quotes to localStorage
 function saveQuotes() {
     localStorage.setItem('quotes', JSON.stringify(quotes));
 }
 
-// Function to display a random quote
+// Keep track of last viewed quote in sessionStorage
+function saveLastViewedQuote(quote) {
+    sessionStorage.setItem('lastViewedQuote', JSON.stringify(quote));
+}
+
+// Pick and display a random quote
 function showRandomQuote() {
     const quoteDisplay = document.getElementById('quoteDisplay');
     const randomIndex = Math.floor(Math.random() * quotes.length);
@@ -27,9 +34,12 @@ function showRandomQuote() {
         <p class="quote-text">${quote.text}</p>
         <p class="quote-category">Category: ${quote.category}</p>
     `;
+    
+    // Update session storage
+    saveLastViewedQuote(quote);
 }
 
-// Add before showRandomQuote function
+// Filter quotes by category
 function filterByCategory(category) {
     const filteredQuotes = category ? 
         quotes.filter(quote => quote.category.toLowerCase() === category.toLowerCase()) :
@@ -50,18 +60,18 @@ function filterByCategory(category) {
     `;
 }
 
-// Function to add a new quote
+// Handle adding new quotes
 function addQuote() {
     const textInput = document.getElementById('newQuoteText');
     const categoryInput = document.getElementById('newQuoteCategory');
     const textError = document.getElementById('textError');
     const categoryError = document.getElementById('categoryError');
     
-    // Reset error messages
+    // Clear previous errors
     textError.style.display = 'none';
     categoryError.style.display = 'none';
     
-    // Validate inputs
+    // Check inputs
     let isValid = true;
     if (!textInput.value.trim()) {
         textError.style.display = 'block';
@@ -74,28 +84,24 @@ function addQuote() {
     
     if (!isValid) return;
 
-    // Create new quote object
+    // Package the new quote
     const newQuote = {
         text: textInput.value.trim(),
         category: categoryInput.value.trim()
     };
     
-    // Add to quotes array
     quotes.push(newQuote);
     saveQuotes();
     
-    // Clear inputs
+    // Reset form
     textInput.value = '';
     categoryInput.value = '';
     
-    // Show the new quote
     showRandomQuote();
-    
-    // Show success message
     showNotification('Quote added successfully!');
 }
 
-// Function to show notification
+// Show temporary notification
 function showNotification(message) {
     const notification = document.createElement('div');
     notification.textContent = message;
@@ -113,7 +119,7 @@ function showNotification(message) {
     
     document.body.appendChild(notification);
     
-    // Remove notification after 3 seconds
+    // Cleanup after 3s
     setTimeout(() => {
         notification.style.opacity = '0';
         setTimeout(() => {
@@ -122,7 +128,7 @@ function showNotification(message) {
     }, 3000);
 }
 
-
+// Toggle quote form visibility
 function createAddQuoteForm() {
     const quoteForm = document.getElementById('quoteForm');
     const toggleButton = document.getElementById('toggleFormButton');
@@ -136,19 +142,63 @@ function createAddQuoteForm() {
     }
 }
 
-// Create toggle button
+// Setup form toggle button
 const toggleButton = document.createElement('button');
 toggleButton.id = 'toggleFormButton';
 toggleButton.textContent = 'Show Quote Form';
 toggleButton.addEventListener('click', createAddQuoteForm);
 document.body.insertBefore(toggleButton, document.getElementById('quoteForm'));
 
-// Event listener for the "Show New Quote" button
+// Hook up event listeners
 document.getElementById('newQuote').addEventListener('click', showRandomQuote);
-
-// Add event listener for the add quote button
 document.getElementById('addQuoteBtn').addEventListener('click', addQuote);
 
-// Show initial quote when page loads
+// Initialize
 showRandomQuote();
 loadQuotes();
+
+// Export quotes to JSON file
+function exportQuotes() {
+    const quotesJson = JSON.stringify(quotes, null, 2);
+    const blob = new Blob([quotesJson], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const downloadLink = document.createElement('a');
+    downloadLink.href = url;
+    downloadLink.download = 'quotes.json';
+    
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    
+    // Cleanup
+    document.body.removeChild(downloadLink);
+    URL.revokeObjectURL(url);
+}
+
+// Import quotes from JSON file
+function importFromJsonFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const importedQuotes = JSON.parse(e.target.result);
+            if (Array.isArray(importedQuotes)) {
+                quotes.push(...importedQuotes);
+                saveQuotes();
+                showNotification('Quotes imported successfully!');
+                showRandomQuote();
+            } else {
+                throw new Error('Invalid format');
+            }
+        } catch (error) {
+            showNotification('Error importing quotes: Invalid JSON format');
+        }
+    };
+    reader.readAsText(file);
+}
+
+// Setup import/export handlers
+document.getElementById('exportBtn').addEventListener('click', exportQuotes);
+document.getElementById('importFile').addEventListener('change', importFromJsonFile);
