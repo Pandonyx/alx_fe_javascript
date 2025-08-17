@@ -122,6 +122,11 @@ input[type="text"]:focus {
     transition: opacity 0.5s ease;
 }
 
+/* Utility classes */
+.hidden {
+    display: none;
+}
+
 /* Responsive design */
 @media (max-width: 600px) {
     body {

@@ -6,12 +6,44 @@ const quotes = [
     { text: "Stay hungry, stay foolish.", category: "Motivation" }
 ];
 
+function loadQuotes() {
+    const savedQuotes = localStorage.getItem('quotes');
+    if (savedQuotes) {
+        quotes.push(...JSON.parse(savedQuotes));
+    }
+}
+
+function saveQuotes() {
+    localStorage.setItem('quotes', JSON.stringify(quotes));
+}
+
 // Function to display a random quote
 function showRandomQuote() {
     const quoteDisplay = document.getElementById('quoteDisplay');
     const randomIndex = Math.floor(Math.random() * quotes.length);
     const quote = quotes[randomIndex];
     
+    quoteDisplay.innerHTML = `
+        <p class="quote-text">${quote.text}</p>
+        <p class="quote-category">Category: ${quote.category}</p>
+    `;
+}
+
+// Add before showRandomQuote function
+function filterByCategory(category) {
+    const filteredQuotes = category ? 
+        quotes.filter(quote => quote.category.toLowerCase() === category.toLowerCase()) :
+        quotes;
+    
+    if (filteredQuotes.length === 0) {
+        showNotification('No quotes found in this category');
+        return;
+    }
+    
+    const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
+    const quote = filteredQuotes[randomIndex];
+    
+    const quoteDisplay = document.getElementById('quoteDisplay');
     quoteDisplay.innerHTML = `
         <p class="quote-text">${quote.text}</p>
         <p class="quote-category">Category: ${quote.category}</p>
@@ -50,6 +82,7 @@ function addQuote() {
     
     // Add to quotes array
     quotes.push(newQuote);
+    saveQuotes();
     
     // Clear inputs
     textInput.value = '';
@@ -89,6 +122,27 @@ function showNotification(message) {
     }, 3000);
 }
 
+
+function createAddQuoteForm() {
+    const quoteForm = document.getElementById('quoteForm');
+    const toggleButton = document.getElementById('toggleFormButton');
+    
+    if (quoteForm.classList.contains('hidden')) {
+        quoteForm.classList.remove('hidden');
+        toggleButton.textContent = 'Hide Quote Form';
+    } else {
+        quoteForm.classList.add('hidden');
+        toggleButton.textContent = 'Show Quote Form';
+    }
+}
+
+// Create toggle button
+const toggleButton = document.createElement('button');
+toggleButton.id = 'toggleFormButton';
+toggleButton.textContent = 'Show Quote Form';
+toggleButton.addEventListener('click', createAddQuoteForm);
+document.body.insertBefore(toggleButton, document.getElementById('quoteForm'));
+
 // Event listener for the "Show New Quote" button
 document.getElementById('newQuote').addEventListener('click', showRandomQuote);
 
@@ -97,3 +151,4 @@ document.getElementById('addQuoteBtn').addEventListener('click', addQuote);
 
 // Show initial quote when page loads
 showRandomQuote();
+loadQuotes();
