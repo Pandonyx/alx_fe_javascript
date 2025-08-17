@@ -435,3 +435,21 @@ window.addEventListener('load', () => {
     // Set up periodic syncing
     setInterval(syncQuotes, SYNC_INTERVAL);
 });
+
+async function postQuoteToServer(quote) {
+    try {
+        const response = await fetch(SERVER_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(quote)
+        });
+
+        if (!response.ok) throw new Error('Failed to save quote to server');
+        return await response.json();
+    } catch (error) {
+        showNotification('Error saving to server: ' + error.message);
+        return null;
+    }
+}
