@@ -176,3 +176,24 @@ input[type="file"] {
 .file-label:hover {
     background-color: #2980b9;
 }
+
+/* Filter controls styles */
+.filter-controls {
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+#categoryFilter {
+    padding: 0.8rem;
+    font-size: 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 5px;
+    background-color: white;
+    cursor: pointer;
+    min-width: 200px;
+}
+
+#categoryFilter:focus {
+    outline: none;
+    border-color: #3498db;
+}
