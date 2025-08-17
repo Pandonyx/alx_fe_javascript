@@ -237,10 +237,10 @@ function initialize() {
     filterQuotes(); // This will respect the last selected category
     
     // Start periodic sync
-    setInterval(syncWithServer, SYNC_INTERVAL);
+    setInterval(syncQuotes, SYNC_INTERVAL);
     
     // Initial sync
-    syncWithServer();
+    syncQuotes();
 }
 
 initialize();
@@ -308,7 +308,7 @@ async function fetchQuotesFromServer() {
 }
 
 // Sync local quotes with server
-async function syncWithServer() {
+async function syncQuotes() {
     const serverQuotes = await fetchQuotesFromServer();
     if (!serverQuotes) return;
 
@@ -399,21 +399,39 @@ function showQuoteReviewDialog(newQuotes) {
     document.body.appendChild(dialog);
 }
 
-// Add after fetchQuotesFromServer function
-async function postQuoteToServer(quote) {
-    try {
-        const response = await fetch(SERVER_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(quote)
-        });
+// Add acceptQuote and rejectQuote functions
+function acceptQuote(quoteId) {
+    const quote = quotes.find(q => q.id === quoteId);
+    if (quote) {
+        // Mark as synced and update timestamp
+        quote.synced = true;
+        quote.timestamp = Date.now();
 
-        if (!response.ok) throw new Error('Failed to save quote to server');
-        return await response.json();
-    } catch (error) {
-        showNotification('Error saving to server: ' + error.message);
-        return null;
+        showNotification('Quote accepted');
     }
 }
+
+function rejectQuote(quoteId) {
+    const index = quotes.findIndex(q => q.id === quoteId);
+    if (index >= 0) {
+        quotes.splice(index, 1); // Remove the rejected quote
+        showNotification('Quote rejected and removed');
+    }
+}
+
+// Close review dialog
+function closeReviewDialog() {
+    const dialog = document.querySelector('.review-dialog');
+    if (dialog) {
+        document.body.removeChild(dialog);
+    }
+}
+
+// Start syncing on page load
+window.addEventListener('load', () => {
+    // Initial fetch and sync
+    syncQuotes();
+    
+    // Set up periodic syncing
+    setInterval(syncQuotes, SYNC_INTERVAL);
+});
