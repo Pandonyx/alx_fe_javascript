@@ -1,10 +1,11 @@
-/* Reset and base styles */
+/* Base reset */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+/* Main layout */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
@@ -21,7 +22,7 @@ h1 {
     font-size: 2.5rem;
 }
 
-/* Quote display styles */
+/* Quote card */
 #quoteDisplay {
     background-color: white;
     padding: 2rem;
@@ -48,7 +49,7 @@ h1 {
     letter-spacing: 1px;
 }
 
-/* Button styles */
+/* Buttons */
 button {
     background-color: #3498db;
     color: white;
@@ -69,7 +70,7 @@ button:hover {
     margin: 0 auto 2rem;
 }
 
-/* Form styles */
+/* Form */
 .quote-form {
     background-color: white;
     padding: 2rem;
@@ -108,7 +109,7 @@ input[type="text"]:focus {
     display: none;
 }
 
-/* Notification styles */
+/* Toast notifications */
 .notification {
     position: fixed;
     top: 20px;
@@ -122,31 +123,20 @@ input[type="text"]:focus {
     transition: opacity 0.5s ease;
 }
 
-/* Utility classes */
+/* Helper classes */
 .hidden {
     display: none;
 }
 
-/* Responsive design */
+/* Mobile styles */
 @media (max-width: 600px) {
-    body {
-        padding: 1rem;
-    }
-
-    h1 {
-        font-size: 2rem;
-    }
-
-    .quote-text {
-        font-size: 1.2rem;
-    }
-
-    .quote-form {
-        padding: 1.5rem;
-    }
+    body { padding: 1rem; }
+    h1 { font-size: 2rem; }
+    .quote-text { font-size: 1.2rem; }
+    .quote-form { padding: 1.5rem; }
 }
 
-/* JSON controls styles */
+/* Import/Export controls */
 .json-controls {
     margin-top: 2rem;
     padding: 1rem;
@@ -163,9 +153,7 @@ input[type="text"]:focus {
     cursor: pointer;
 }
 
-input[type="file"] {
-    display: none;
-}
+input[type="file"] { display: none; }
 
 .file-label {
     background-color: #3498db;
@@ -177,7 +165,7 @@ input[type="file"] {
     background-color: #2980b9;
 }
 
-/* Filter controls styles */
+/* Category filter */
 .filter-controls {
     margin-bottom: 1.5rem;
     text-align: center;
@@ -196,4 +184,41 @@ input[type="file"] {
 #categoryFilter:focus {
     outline: none;
     border-color: #3498db;
+}
+
+/* Conflict resolution modals */
+.conflict-dialog,
+.review-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+.conflict-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.quote-review-item {
+    border-bottom: 1px solid #eee;
+    padding: 1rem 0;
+}
+
+.quote-review-item button {
+    margin: 0.5rem 0.5rem 0 0;
+}
+
+/* Modal backdrop */
+.dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
 }

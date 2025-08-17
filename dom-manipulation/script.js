@@ -6,6 +6,10 @@ const quotes = [
     { text: "Stay hungry, stay foolish.", category: "Motivation" }
 ];
 
+// Server sync configuration
+const SERVER_URL = 'https://jsonplaceholder.typicode.com/posts';
+const SYNC_INTERVAL = 30000; // 30 seconds
+
 // Load quotes from localStorage
 function loadQuotes() {
     const savedQuotes = localStorage.getItem('quotes');
@@ -221,6 +225,12 @@ function initialize() {
     loadQuotes();
     populateCategories();
     filterQuotes(); // This will respect the last selected category
+    
+    // Start periodic sync
+    setInterval(syncWithServer, SYNC_INTERVAL);
+    
+    // Initial sync
+    syncWithServer();
 }
 
 initialize();
@@ -267,6 +277,114 @@ function importFromJsonFile(event) {
     reader.readAsText(file);
 }
 
-// Setup import/export handlers
-document.getElementById('exportBtn').addEventListener('click', exportQuotes);
-document.getElementById('importFile').addEventListener('change', importFromJsonFile);
+// Fetch quotes from server
+async function fetchServerQuotes() {
+    try {
+        const response = await fetch(SERVER_URL);
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const serverData = await response.json();
+        // Convert server data format to our quote format
+        return serverData.map(item => ({
+            id: item.id,
+            text: item.title,
+            category: item.body.split('\n')[0] || 'Uncategorized',
+            timestamp: item.timestamp || Date.now()
+        }));
+    } catch (error) {
+        showNotification('Error fetching server data: ' + error.message);
+        return null;
+    }
+}
+
+// Sync local quotes with server
+async function syncWithServer() {
+    const serverQuotes = await fetchServerQuotes();
+    if (!serverQuotes) return;
+
+    // Find newer quotes from server
+    const newServerQuotes = serverQuotes.filter(serverQuote => {
+        const localQuote = quotes.find(q => q.id === serverQuote.id);
+        return !localQuote || serverQuote.timestamp > localQuote.timestamp;
+    });
+
+    if (newServerQuotes.length > 0) {
+        // Show conflict resolution dialog
+        showConflictDialog(newServerQuotes);
+    }
+
+    lastSyncTimestamp = Date.now();
+    saveQuotes();
+}
+
+// Show conflict resolution dialog
+function showConflictDialog(newQuotes) {
+    const dialog = document.createElement('div');
+    dialog.className = 'conflict-dialog';
+    dialog.innerHTML = `
+        <h3>New Quotes Available</h3>
+        <p>${newQuotes.length} new or updated quotes found.</p>
+        <div class="conflict-actions">
+            <button id="acceptAll">Accept All</button>
+            <button id="reviewChanges">Review Changes</button>
+            <button id="ignore">Ignore</button>
+        </div>
+    `;
+
+    // Handle conflict resolution choices
+    dialog.querySelector('#acceptAll').onclick = () => {
+        mergeQuotes(newQuotes);
+        document.body.removeChild(dialog);
+        showNotification('Quotes updated successfully');
+    };
+
+    dialog.querySelector('#reviewChanges').onclick = () => {
+        showQuoteReviewDialog(newQuotes);
+        document.body.removeChild(dialog);
+    };
+
+    dialog.querySelector('#ignore').onclick = () => {
+        document.body.removeChild(dialog);
+    };
+
+    document.body.appendChild(dialog);
+}
+
+// Merge quotes with conflict resolution
+function mergeQuotes(newQuotes) {
+    newQuotes.forEach(newQuote => {
+        const index = quotes.findIndex(q => q.id === newQuote.id);
+        if (index >= 0) {
+            quotes[index] = { ...quotes[index], ...newQuote };
+        } else {
+            quotes.push(newQuote);
+        }
+    });
+    
+    saveQuotes();
+    populateCategories();
+    showRandomQuote();
+}
+
+// Review changes dialog
+function showQuoteReviewDialog(newQuotes) {
+    const dialog = document.createElement('div');
+    dialog.className = 'review-dialog';
+    
+    const quotesList = newQuotes.map(quote => `
+        <div class="quote-review-item">
+            <p>${quote.text}</p>
+            <p>Category: ${quote.category}</p>
+            <button onclick="acceptQuote(${quote.id})">Accept</button>
+            <button onclick="rejectQuote(${quote.id})">Reject</button>
+        </div>
+    `).join('');
+    
+    dialog.innerHTML = `
+        <h3>Review Changes</h3>
+        <div class="quotes-list">${quotesList}</div>
+        <button onclick="closeReviewDialog()">Close</button>
+    `;
+    
+    document.body.appendChild(dialog);
+}
