@@ -148,11 +148,21 @@ function addQuote() {
     // Package the new quote
     const newQuote = {
         text: textInput.value.trim(),
-        category: categoryInput.value.trim()
+        category: categoryInput.value.trim(),
+        timestamp: Date.now()
     };
     
+    // Add locally
     quotes.push(newQuote);
     saveQuotes();
+    
+    // Sync with server
+    postQuoteToServer(newQuote)
+        .then(response => {
+            if (response) {
+                showNotification('Quote synced with server');
+            }
+        });
     
     // Update categories dropdown
     populateCategories();
@@ -387,4 +397,23 @@ function showQuoteReviewDialog(newQuotes) {
     `;
     
     document.body.appendChild(dialog);
+}
+
+// Add after fetchQuotesFromServer function
+async function postQuoteToServer(quote) {
+    try {
+        const response = await fetch(SERVER_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(quote)
+        });
+
+        if (!response.ok) throw new Error('Failed to save quote to server');
+        return await response.json();
+    } catch (error) {
+        showNotification('Error saving to server: ' + error.message);
+        return null;
+    }
 }
