@@ -321,6 +321,7 @@ async function syncQuotes() {
     if (newServerQuotes.length > 0) {
         // Show conflict resolution dialog
         showConflictDialog(newServerQuotes);
+        alert('Quotes synced with server!');  // Add this line
     }
 
     lastSyncTimestamp = Date.now();
