@@ -278,7 +278,7 @@ function importFromJsonFile(event) {
 }
 
 // Fetch quotes from server
-async function fetchServerQuotes() {
+async function fetchQuotesFromServer() {
     try {
         const response = await fetch(SERVER_URL);
         if (!response.ok) throw new Error('Network response was not ok');
@@ -299,7 +299,7 @@ async function fetchServerQuotes() {
 
 // Sync local quotes with server
 async function syncWithServer() {
-    const serverQuotes = await fetchServerQuotes();
+    const serverQuotes = await fetchQuotesFromServer();
     if (!serverQuotes) return;
 
     // Find newer quotes from server
